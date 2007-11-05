@@ -1,0 +1,179 @@
+<?xml version="1.0"?>
+<project name="k-sat-solvers" default="release">
+    <property name="src.dir" value="src"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="build.dir" value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="dist.dir" value="${build.dir}/dist"/>
+    <property name="global.dist.dir" value="dist"/>
+    <property name="docs.dir" value="${build.dir}/docs"/>
+    <property name="test-results.dir" value="${docs.dir}/test-results"/>
+
+    <!-- Specify main class to add to jar manifest -->
+    <property name="main.class" value="ai.solvers.DLM"/>
+
+    <target name="-prepare">
+        <mkdir dir="${global.dist.dir}"/>
+    </target>
+
+    <target name="clean" description="Clean">
+        <sequential>
+            <delete dir="${build.dir}" deleteonexit="true"/>
+        </sequential>
+    </target>
+
+    <target name="-compile" description="Compile the app." depends="clean">
+        <compile.module/>
+    </target>
+
+    <target name="jar" description="Jar the app" depends="-compile">
+        <jar.module module.name="solvers">
+            <ext>
+                <manifest>
+                    <attribute name="Class-Path" value="aima.jar"/>
+                    <attribute name="Main-Class" value="${main.class}"/>
+                </manifest>
+            </ext>
+        </jar.module>
+    </target>
+
+    <target name="release" description="Builds the app and copies dependencies" depends="jar">
+        <release.module/>
+    </target>
+
+    <!--======================================================================
+        MACROS
+    =======================================================================-->
+
+
+    <!-- This macro compiles one source group (i.e. the main source tree
+or the unit test source tree) of a given module. -->
+    <macrodef name="compile.src.group">
+        <attribute name="src.group"/>
+        <attribute name="build.dir" default="${build.dir}"/>
+        <attribute name="src.dir" default="src"/>
+        <attribute name="compiler.debug" default="true"/>
+        <attribute name="compiler.deprecation" default="true"/>
+        <attribute name="compiler.optimize" default="true"/>
+        <attribute name="compiler.verbose" default="false"/>
+        <attribute name="compiler.version" default="1.5"/>
+        <attribute name="compiler.encoding" default="iso-8859-1"/>
+        <attribute name="compiler.nowarn" default="false"/>
+        <attribute name="compiler.xlint" default="-Xlint:unchecked"/>
+        <element name="group.classpath" optional="true"/>
+        <sequential>
+            <mkdir dir="@{build.dir}/classes/@{src.group}"/>
+            <mkdir dir="@{build.dir}/dist"/>
+            <javac destdir="@{build.dir}/classes/@{src.group}"
+                   debug="@{compiler.debug}"
+                   deprecation="@{compiler.deprecation}"
+                   optimize="@{compiler.optimize}"
+                   source="@{compiler.version}"
+                   target="@{compiler.version}"
+                   verbose="@{compiler.verbose}"
+                   encoding="@{compiler.encoding}"
+                   nowarn="@{compiler.nowarn}"
+                   srcdir="@{src.dir}/@{src.group}">
+                <classpath>
+                    <fileset dir="." includes="lib/**/*.jar"/>
+                    <fileset dir="." includes="dist/**/*.jar"/>
+                    <fileset dir="${lib.dir}" includes="**/*.jar"/>
+                    <fileset dir="${dist.dir}" includes="**/*.jar"/>
+                    <group.classpath/>
+                </classpath>
+                <compilerarg value="@{compiler.xlint}"/>
+                <exclude name="**/package-info.java"/>
+            </javac>
+            <!-- Copy non-Java resources. -->
+            <copy todir="@{build.dir}/classes/@{src.group}">
+                <fileset dir="@{src.dir}/@{src.group}" excludes="**/*.java"/>
+            </copy>
+        </sequential>
+    </macrodef>
+
+
+    <!-- This macro compiles all source (including unit tests) for a
+ single module.  Unit tests should always be compiled with the
+ module to avoid having changes to the module break the tests
+ without anybody noticing. -->
+    <macrodef name="compile.module">
+        <attribute name="build.dir" default="build"/>
+        <attribute name="src.dir" default="src"/>
+        <attribute name="lib.dir" default="lib"/>
+        <attribute name="compiler.debug" default="true"/>
+        <attribute name="compiler.deprecation" default="true"/>
+        <attribute name="compiler.optimize" default="true"/>
+        <attribute name="compiler.verbose" default="true"/>
+        <attribute name="compiler.version" default="1.5"/>
+        <attribute name="compiler.encoding" default="iso-8859-1"/>
+        <attribute name="compiler.nowarn" default="false"/>
+        <attribute name="compiler.xlint" default="-Xlint:unchecked"/>
+        <element name="additional.classpath" optional="true"/>
+        <sequential>
+            <compile.src.group src.group="main"
+                               build.dir="@{build.dir}"
+                               src.dir="@{src.dir}"
+                               compiler.debug="@{compiler.debug}"
+                               compiler.deprecation="@{compiler.deprecation}"
+                               compiler.optimize="@{compiler.optimize}"
+                               compiler.verbose="@{compiler.verbose}"
+                               compiler.version="@{compiler.version}"
+                               compiler.encoding="@{compiler.encoding}"
+                               compiler.nowarn="@{compiler.nowarn}"
+                               compiler.xlint="@{compiler.xlint}">
+                <group.classpath>
+                    <additional.classpath/>
+                </group.classpath>
+            </compile.src.group>
+            <compile.src.group src.group="tests"
+                               build.dir="@{build.dir}"
+                               src.dir="@{src.dir}"
+                               compiler.debug="@{compiler.debug}"
+                               compiler.deprecation="@{compiler.deprecation}"
+                               compiler.verbose="@{compiler.verbose}"
+                               compiler.version="@{compiler.version}"
+                               compiler.encoding="@{compiler.encoding}"
+                               compiler.nowarn="@{compiler.nowarn}"
+                               compiler.xlint="@{compiler.xlint}">
+                <group.classpath>
+                    <!-- Add the main classes to the classpath for unit test compilation. -->
+                    <path location="@{build.dir}/classes/main"/>
+                    <additional.classpath/>
+                </group.classpath>
+            </compile.src.group>
+        </sequential>
+    </macrodef>
+
+
+    <macrodef name="jar.module">
+        <attribute name="module.name"/>
+        <attribute name="jar.file.name" default="@{module.name}.jar"/>
+        <attribute name="destination.dir" default="${dist.dir}"/>
+        <attribute name="effective.dir" default="${classes.dir}/main"/>
+        <element name="patternset" optional="true"/>
+        <element name="ext" optional="true"/>
+        <sequential>
+            <mkdir dir="@{destination.dir}"/>
+            <!-- Make conf dir if it does not exists so that the JAR task doesn't fail. -->
+            <mkdir dir="${build.dir}/conf"/>
+            <jar destfile="@{destination.dir}/@{jar.file.name}">
+                <fileset dir="@{effective.dir}" excludes="@{jar.file.name}">
+                    <patternset/>
+                </fileset>
+                <fileset dir="${build.dir}/conf" includes="**/*"/>
+                <ext/>
+            </jar>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="release.module">
+        <attribute name="dist.dir" default="${dist.dir}"/>
+        <sequential>
+            <copy todir="@{dist.dir}" flatten="true" failonerror="false">
+                <fileset dir="${lib.dir}"/>
+            </copy>
+        </sequential>
+    </macrodef>
+
+</project>
+
