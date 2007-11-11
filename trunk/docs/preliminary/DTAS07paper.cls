@@ -35,7 +35,7 @@
   {%3
    \fontsize{14}{16}\selectfont
    \bfseries
-    \MakeUppercase{\@title}
+	\@title
    \par
   }%3
   %\vspace{18pt}%
