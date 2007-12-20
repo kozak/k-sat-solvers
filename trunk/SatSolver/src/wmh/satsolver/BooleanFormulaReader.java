@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.nio.IntBuffer;
-import java.nio.Buffer;
 
 public class BooleanFormulaReader {
 
@@ -20,9 +19,7 @@ public class BooleanFormulaReader {
         }
         CnfFileScanner scanner = new CnfFileScanner(reader);
         ProblemChars problemChars = scanner.skipCommentsAndParseProblemLine();
-        System.out.println(problemChars.numClauses);
-        System.out.println(problemChars.numVarsPerClause);
-        return null;
+        return scanner.parseClauses(problemChars);
     }
 
     private static class CnfFileScanner {
@@ -30,7 +27,6 @@ public class BooleanFormulaReader {
         private Pattern problemLinePattern = Pattern.compile("p\\s+cnf\\s+\\d+\\s+\\d+");
 
         private LineNumberReader reader;
-        private Scanner scanner;
 
         public CnfFileScanner(LineNumberReader reader) {
             this.reader = reader;
@@ -87,39 +83,47 @@ public class BooleanFormulaReader {
             return problemChars;
         }
 
-        private List<Clause> parseClauses(ProblemChars problemChars) throws CnfFileLoadingException {
+        private BooleanFormula parseClauses(ProblemChars problemChars) throws CnfFileLoadingException {
             List<Clause> clauses = new ArrayList<Clause>(problemChars.numClauses);
             Scanner scanner = new Scanner(reader);
 
             IntBuffer variables = IntBuffer.allocate(problemChars.numVarsPerClause);
 
             while (scanner.hasNext()) {
+                int i;
                 try {
-                    int i = scanner.nextInt();
-                    if (i < 0) {
-                        throw new CnfFileLoadingException("Positive integer expected");
-                    } else if (i == 0) {
-                        // Koniec klauzuli
-                        if (variables.capacity() == 0) {
-                            throw new CnfFileLoadingException("Empty clause", reader.getLineNumber());
-                        }
-                        if (clauses.size() == problemChars.numClauses) {
-                            throw new CnfFileLoadingException(
-                                    "Maximum number of clauses defined in problem line exceeded");
-                        }
-//                        Integer[] ary = (Integer[]) variables.toArray();
-//                        clauses.add(new Clause(ary))
-                    } else {
-
-                    }
+                    i = scanner.nextInt();
                 } catch (InputMismatchException e) {
                     throw new CnfFileLoadingException("Integer expected", reader.getLineNumber());
                 }
+
+                if (i == 0) {
+                    // Koniec klauzuli
+                    if (variables.position() == 0) {
+                        throw new CnfFileLoadingException("Empty clause", reader.getLineNumber());
+                    }
+                    if (clauses.size() == problemChars.numClauses) {
+                        throw new CnfFileLoadingException(
+                                "Maximum number of clauses defined in problem line exceeded",
+                                reader.getLineNumber());
+                    }
+                    int[] varArray = java.util.Arrays.copyOf(variables.array(), variables.position());
+                    clauses.add(new Clause(varArray));
+                    variables.position(0);
+                } else {
+                    if (variables.position() == problemChars.numVarsPerClause) {
+                        throw new CnfFileLoadingException("Maximum number of variables in clause exceeded",
+                                reader.getLineNumber());
+                    }
+                    variables.put(i);
+                }
             }
-            return clauses;
+            if (clauses.isEmpty()) {
+                throw new CnfFileLoadingException("No clauses found", reader.getLineNumber());
+            }
+            return new BooleanFormula(clauses.toArray(new Clause[clauses.size()]), problemChars.numVarsPerClause);
         }
     }
-
 
     private static class ProblemChars {
         public int numVarsPerClause;

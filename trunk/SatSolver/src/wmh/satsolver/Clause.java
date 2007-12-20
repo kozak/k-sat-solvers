@@ -27,10 +27,14 @@ public class Clause {
 		return false;
 	}
 
-
 	public String toString() {
-		return variables.toString();
-	}
+        StringBuilder sb = new StringBuilder();
+        sb.append(' ');
+        for (int variable : variables) {
+            sb.append(variable).append(' ');
+        }
+        return sb.toString();
+    }
 
 	private final int[] variables;
 }

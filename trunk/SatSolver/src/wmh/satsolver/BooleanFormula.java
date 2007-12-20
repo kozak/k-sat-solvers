@@ -1,14 +1,19 @@
 package wmh.satsolver;
 
-import java.util.Arrays;
-
-
 public class BooleanFormula {
-	public BooleanFormula(Clause[] clauses) {
-		this.clauses = clauses;
-	}
+    private final Clause[] clauses;
+    private final int numVarsPerClause;
 
-	public int getNumSatisfiedClauses(Assignment assignment) {
+    public BooleanFormula(Clause[] clauses, int numVarsPerClause) {
+        this.clauses = clauses;
+        this.numVarsPerClause = numVarsPerClause;
+    }
+
+    public int genNumClauses() {
+        return clauses.length;
+    }
+
+    public int getNumSatisfiedClauses(Assignment assignment) {
 		int numSatisfiedClauses = 0;
 		for (Clause clause : clauses) {
 			if (clause.isSatisfiedBy(assignment)) {
@@ -19,18 +24,28 @@ public class BooleanFormula {
 	}
 
 	public boolean isSatisfiedBy(Assignment assignment) {
-		for (Clause clause : clauses) {
-			if (!clause.isSatisfiedBy(assignment)) {
-				return false;
-			}
-		}
-		return true;
-	}
+        if (assignment.getSize() != getNumVarsPerClause()) {
+            throw new IllegalArgumentException("Invalid assignment length");
+        }
+        for (Clause clause : clauses) {
+            if (!clause.isSatisfiedBy(assignment)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        for (Clause clause : clauses) {
+            sb.append('(');
+            sb.append(clause.toString());
+            sb.append(')');
+        }
+        return sb.toString();
+    }
 
-	public String toString() {
-		return clauses.toString();
-	}
-
-	private final Clause[] clauses;
+    public int getNumVarsPerClause() {
+        return numVarsPerClause;
+    }
 }

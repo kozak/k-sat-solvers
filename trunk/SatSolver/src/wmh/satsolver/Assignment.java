@@ -37,7 +37,32 @@ public class Assignment {
 		bitValues.flip(index);
 	}
 
-	public int getSize() {
+    public Assignment getBestFlip(BooleanFormula bf) {
+        Assignment a = duplicate();
+        a.makeBestFlip(bf);
+        return a;
+    }
+
+    public void makeBestFlip(BooleanFormula bf) {
+        int maxSatisfiedClauses = 0;
+        int bestFlipIndex = 0;
+        for (int i = 0; i < getSize(); i++) {
+            flip(i);
+            int numSatisfiedClauses = bf.getNumSatisfiedClauses(this);
+
+            if (numSatisfiedClauses == bf.genNumClauses()) {
+                return;
+            }
+            if (numSatisfiedClauses > maxSatisfiedClauses) {
+                maxSatisfiedClauses = numSatisfiedClauses;
+                bestFlipIndex = i;
+            }
+            flip(i);
+        }
+        flip(bestFlipIndex);
+    }
+
+    public int getSize() {
 		return size;
 	}
 
@@ -47,7 +72,15 @@ public class Assignment {
 		}
 	}
 
-	public String toString() {
+    public Assignment duplicate() {
+        Assignment duplicate = new Assignment(getSize());
+        for (int i = 0; i < getSize(); ++i) {
+            duplicate.setTo(i, get(i));
+        }
+        return duplicate;
+    }
+
+    public String toString() {
 		StringBuilder sb = new StringBuilder(getSize());
 		for (int i = 0; i < getSize(); ++i) {
 			if (get(i)) {
