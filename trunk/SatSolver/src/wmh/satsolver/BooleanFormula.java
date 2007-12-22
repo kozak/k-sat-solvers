@@ -1,5 +1,10 @@
 package wmh.satsolver;
 
+import java.util.List;
+import java.util.Iterator;
+import java.util.Arrays;
+import java.util.ArrayList;
+
 public class BooleanFormula {
     private final Clause[] clauses;
     private final int numVarsPerClause;
@@ -33,6 +38,17 @@ public class BooleanFormula {
             }
         }
         return true;
+    }
+
+    public Clause[] getClausesNotSatisfiedBy(Assignment a) {
+        List<Clause> notSatClauses = new ArrayList<Clause>(java.util.Arrays.asList(clauses));
+        for (Iterator<Clause> it = notSatClauses.iterator(); it.hasNext();) {
+            Clause clause = it.next();
+            if (clause.isSatisfiedBy(a)) {
+                it.remove();
+            }
+        }
+        return notSatClauses.toArray(new Clause[notSatClauses.size()]);
     }
 
     public String toString() {

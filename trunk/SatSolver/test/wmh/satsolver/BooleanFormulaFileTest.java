@@ -1,15 +1,18 @@
 package wmh.satsolver;
 
-import java.io.FileNotFoundException;
-import java.nio.IntBuffer;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.Callable;
+import wmh.satsolver.solvers.WalkSatSolver;
+import wmh.satsolver.input.BooleanFormulaReader;
+import wmh.satsolver.input.CnfFileLoadingException;
 
 public class BooleanFormulaFileTest {
 	public static void main(String[] args) throws CnfFileLoadingException {
-		BooleanFormula bf = BooleanFormulaReader.read("lol5.cnf");
-        Solver solver = new GsatSolver(bf,
-                AssignmentFactory.getRandomAssignment(bf.getNumVarsPerClause()));
-        solver.solve(bf);
+		BooleanFormula bf = BooleanFormulaReader.read("uf20-04.cnf");
+        Assignment bestStartingPoint =
+                AssignmentFactory.getRandomAssignment(bf.getNumVarsPerClause());
+        System.out.println(bestStartingPoint);
+        AbstractSolver solver = new WalkSatSolver(bf,
+                bestStartingPoint,
+                0.0f);
+        solver.solve();
     }
 }

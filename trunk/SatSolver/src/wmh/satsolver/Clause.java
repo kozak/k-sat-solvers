@@ -9,7 +9,15 @@ public class Clause {
 		this.variables = variables;
 	}
 
-	public boolean isSatisfiedBy(Assignment assignment) {
+    public int getVar(int index) {
+        return variables[index];
+    }
+
+    public int getNumVars() {
+        return variables.length;
+    }
+
+    public boolean isSatisfiedBy(Assignment assignment) {
 		for (int variable : variables) {
 			// Zmienne s¹ numerowane od 1, ale tablica przypisañ od 0.
 			int index = Math.abs(variable) - 1;

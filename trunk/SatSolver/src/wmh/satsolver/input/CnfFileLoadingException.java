@@ -1,4 +1,4 @@
-package wmh.satsolver;
+package wmh.satsolver.input;
 
 public class CnfFileLoadingException extends Exception {
     public CnfFileLoadingException() {

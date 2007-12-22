@@ -1,40 +1,46 @@
 package wmh.satsolver;
 
-import java.util.BitSet;
+import org.apache.log4j.Logger;
+
+import java.util.Random;
+
 
 public class Assignment {
-	private final BitSet bitValues;
+    private static Logger logger = Logger.getLogger(Assignment.class);
+    private static ThreadLocal<Random> random = new ThreadLocal<Random>();
+
+    private final boolean[] bitValues;
 	private int size;
 
-	public Assignment(int size) {
-		bitValues = new BitSet(size);
+    public Assignment(int size) {
+		bitValues = new boolean[size];
 		this.size = size;
 	}
 
 	public boolean get(int index) {
 		validateIndex(index);
-		return bitValues.get(index);
+		return bitValues[index];
 	}
 
 
 	public void set(int index) {
 		validateIndex(index);
-		bitValues.set(index);
+		bitValues[index] = true;
 	}
 
 	public void setTo(int index, boolean value) {
 		validateIndex(index);
-		bitValues.set(index, value);
+		bitValues[index] = value;
 	}
 
 	public void clear(int index) {
 		validateIndex(index);
-		bitValues.clear(index);
+		bitValues[index] = false;
 	}
 
 	public void flip(int index) {
-		validateIndex(index);
-		bitValues.flip(index);
+        validateIndex(index);
+		bitValues[index] = !bitValues[index];
 	}
 
     public Assignment getBestFlip(BooleanFormula bf) {
@@ -51,6 +57,10 @@ public class Assignment {
             int numSatisfiedClauses = bf.getNumSatisfiedClauses(this);
 
             if (numSatisfiedClauses == bf.genNumClauses()) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Flipping best bit " + bestFlipIndex +
+                            (bitValues[bestFlipIndex] ? "1->0" : "0->1"));
+                }
                 return;
             }
             if (numSatisfiedClauses > maxSatisfiedClauses) {
@@ -59,7 +69,16 @@ public class Assignment {
             }
             flip(i);
         }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Flipping best bit " + bestFlipIndex +
+                    (bitValues[bestFlipIndex] ? "1->0" : "0->1"));
+        }
         flip(bestFlipIndex);
+    }
+
+    public void makeRandomFlip() {
+        int iBitToFlip = Math.abs(getRandom().nextInt()) % size;
+        flip(iBitToFlip);
     }
 
     public int getSize() {
@@ -91,4 +110,10 @@ public class Assignment {
 		}
 		return sb.toString();
 	}
+    private Random getRandom() {
+        if (random.get() == null) {
+            random.set(new Random());
+        }
+        return random.get();
+    }
 }

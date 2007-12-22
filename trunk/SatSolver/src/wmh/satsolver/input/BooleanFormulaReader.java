@@ -1,4 +1,8 @@
-package wmh.satsolver;
+package wmh.satsolver.input;
+
+import wmh.satsolver.BooleanFormula;
+import wmh.satsolver.input.CnfFileLoadingException;
+import wmh.satsolver.Clause;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -23,8 +27,8 @@ public class BooleanFormulaReader {
     }
 
     private static class CnfFileScanner {
-        private Pattern commentsPattern = Pattern.compile("^c\\s+.+");
-        private Pattern problemLinePattern = Pattern.compile("p\\s+cnf\\s+\\d+\\s+\\d+");
+        private Pattern commentsPattern = Pattern.compile("^c\\s*.*");
+        private Pattern problemLinePattern = Pattern.compile("p\\s+cnf\\s+\\d+\\s+\\d+\\s*");
 
         private LineNumberReader reader;
 
