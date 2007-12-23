@@ -1,0 +1,249 @@
+\documentclass{DTAS07paper}
+\usepackage{epsfig}
+\usepackage{graphicx}
+\usepackage{polski}
+\usepackage[cp1250]{inputenc}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{amsmath}
+\usepackage{url}
+
+\title{PRZESZUKIWANIE LOKALNE DLA PROBLEMU SAT\\
+{\small Dokumentacja wstêpna projektu z przedmiotu WMH}
+}
+
+\author{Micha³ Skrzêdziejewski, Micha³ Kozakiewicz}
+
+\begin{document}
+%\maketitle
+\thispagestyle{empty}
+
+\section{WSTÊP}
+Problem spe³nialnoœci wyra¿eñ logicznych (ang. {\em Boolean satisfiability 
+problem}), w skrócie zwany SAT, jest kluczowym problemem teorii obliczalnoœci
+i logiki matematycznej.
+Nieformalnie mo¿na go sformu³owaæ nastêpuj¹co: maj¹c dane wyra¿enie logiczne w 
+postaci zbioru klauzul, czy
+istnieje przypisanie zmiennych w tych klauzulach takie, ¿e wszystkie te klauzule
+s¹ spe³nione?
+
+Problem SAT jest pierwszym problemem co do którego udowodniono, ¿e jest 
+NP-zupe³ny. By³ on dog³êbnie studiowany, st¹d te¿ na jego temat powsta³o wiele
+ksi¹¿ek i opracowañ. Multum zagadnieñ praktycznych (projektowanie uk³adów
+scalonych) oraz teoretycznych (kolorowanie grafów) mo¿na sprowadziæ do problemu
+SAT.
+
+W wypadku wielu trudnych problemów SAT przegl¹danie ca³ej przestrzeni rozwi¹zañ 
+jest zwykle zbyt kosztowne obliczeniowo. Dlatego te¿ powsta³o wiele metod 
+przybli¿onych, które nie sprawdzaj¹ ca³ej przestrzeni rozwi¹zañ. Jedn¹ z popularnych metod heurystycznych jest przeszukiwanie lokalne. W ramach projektu zostan¹ zaimplementowane dwa warianty przeszukiwania lokalnego dla problemu SAT.
+
+
+\section{SFORMU£OWANIE PROBLEMU}
+{\em Zmienn¹ zdaniow¹} $x_i$ nazywamy zmienn¹ przyjmuj¹c¹ wartoœci ze zbioru
+$\{1,0\}$. Wartoœæ zmiennej zdaniowej mo¿na interpretowaæ jako prawdê ($1$) lub
+fa³sz ($0$).
+
+{\em Litera³em} $l$ jest zmienna $x_i$ lub jej negacja $\overline{x_i}$.
+
+{\em Przypisaniem} $x$ jest wektor kolumnowy o rozmiarze $n$ zawieraj¹cy jako elementy wartoœci zmiennych $x_1 \dots x_n$.
+
+{\em Klauzul¹} $c$ w postaci dysjunkcyjnej jest zbiór litera³ów po³¹czonych 
+operatorem alternatywy, np. $(x_2 \vee x_3 \vee x_6)$. Przypisanie $x$ spe³nia klauzulê $c$, jeœli istnieje chocia¿ jeden litera³ $l$ w klauzuli $c$ taki, ¿e
+jeœli $l$ jest pozytywny (postaci $x_i$) to $x_i = 1$, a jeœli $l$ jest negatywny (postaci $\overline{x_i}$) to $x_i = 0$.
+
+{\em Wyra¿eniem logicznym} w postaci koniunkcyjnej normalnej (CNF - Conjunctive Normal Form) nazywamy zbiór 
+klauzul w postaci dysjunkcyjnej po³¹czonych operatorem koniunkcji, np. $(x_1 \vee x_2 \vee x_3) \wedge
+(x_2 \vee x_3 \vee x_5)$. W dalszym ci¹gu bêdziemy rozwa¿aæ tylko wyra¿enia w postaci CNF. 
+
+Mo¿na dokonaæ kategoryzacji problemu SAT ze wzglêdu na maksymaln¹ liczbê litera³ów w klauzuli. Dla jednego litera³u (1-SAT) problem jest trywialny i da siê go rozwi¹zaæ w czasie liniowym. Dla dwóch litera³ów (2-SAT) mo¿na to zrobiæ w czasie wielomianowym. Problem $k$-SAT, gdzie $k > 2$ jest problemem
+NP-zupe³nym. Najczêœciej rozwa¿a siê problem 3-SAT i on w³aœnie bêdzie przedmiotem badañ przeprowadzonych w ramach projektu.
+
+\section{PRZESZUKIWANIE LOKALNE}
+Heurystyki zak³adaj¹, i¿ nie potrzeba przeszukiwaæ ca³ej przestrzeni
+rozwi¹zañ aby znaleŸæ rozwi¹zanie optymalne. W klasycznej metodzie przeszukiwania lokalnego, algorytm startuje z pewnego rozwi¹zania pocz¹tkowego (zwykle wybranego losowo) a nastêpnie eksploruje otoczenie bie¿¹cego punktu
+w poszukiwaniu lepszego rozwi¹zania. W tym celu, dla danego problemu, musimy zdefiniowaæ zarówno funkcjê celu, która umo¿liwi nam ocenê rozwi¹zañ, jak i 
+s¹siedztwo danego punktu w przestrzeni poszukiwañ. Doœæ czêstym zjawiskiem jest
+utkniêcie w minimum lokalnym, zatem po wykryciu takiej sytuacji nale¿y ponownie 
+uruchomiæ algorytm z nowym punktem pocz¹tkowym, zapamiêtuj¹c oczywiœcie najlepsze dotychczasowe rozwi¹zanie.
+
+W przypadku problemu SAT otoczenie mo¿na zdefiniowaæ intuicyjnie - s¹ to rozwi¹zania ró¿ni¹ce siê przypisaniem jednej zmiennej. Gorzej jest z funkcj¹ celu: przypisanie $x$ albo spe³nia wyra¿enie logiczne, albo nie.
+Mo¿na jednak jako minimalizowan¹ funkcjê przyj¹æ liczbê klauzul, które nie s¹ spe³nione. Niech $C(x)$ oznacza liczbê niespe³nionych klauzul dla przypisania $x$, $N(x)$ oznacza funkcjê s¹siedztwa a $select(x^i,N(x^i))$ wybiera nastêpne
+przypisanie na podstawie bie¿¹cego przypisania i jego s¹siadów. Wtedy 
+zgeneralizowany algorytm przeszukiwania lokalnego wygl¹da nastêpuj¹co:
+
+\begin{algorithm}
+\begin{algorithmic}
+\STATE Wybierz $x^0$
+\STATE $k\gets 0$
+\WHILE {$C(x^k) > 0$}
+\STATE $N\gets N(x^k)$
+\STATE $x^{k+1}\gets select(x^k, N)$
+\STATE $k\gets k+1$
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+Na pocz¹tku wybierane jest (zwykle w sposób losowy) pocz¹tkowe rozwi¹zanie $x^0$. Nastêpnie, dopóki wszystkie klauzule nie bêd¹ spe³nione, algorytm wybiera
+z otoczenia punktu $x^0$ nastêpne przypisanie, zgodnie z pewn¹ ustalon¹ strategi¹. Zwykle wprowadza siê dodatkowe kryteria zatrzymania algorytmu, zwi¹zane z utkniêciem w minimum lokalnym lub przekroczeniem maksymalnej iloœci 
+iteracji.
+
+W podstawowej wersji przeszukiwania lokalnego mamy do czynienia z dwoma rodzajami funkcji wybieraj¹cej nastêpne przypisanie. W algorytmie zach³annym ({\em ang. greedy}) wybierane jest przypisanie powoduj¹ce najwiêksz¹ poprawê w stosunku do bie¿¹cego przypisania. W algorytmie wspinaczkowym (ang. {\em hill-climbing}) wybierane jest pierwsze napotkane przypisanie, które nie powoduje pogorszenia uzyskanego wyniku. Najczêœciej po natrafieniu na minimum lokalne algorytm jest
+restartowany. Zauwa¿my jednak, ¿e w ten sposób tracona jest informacja o ju¿
+przeszukanej czêœci przestrzeni.
+
+Podstawowy wariant przeszukiwania lokalnego mo¿na usprawniæ poprzez wprowadzenie
+ca³kowicie losowego ruchu w przestrzeni poszukiwañ. Prawdopodobieñstwo takiego
+ruchu zale¿y od parametru który zwykle maleje wraz z kolejnymi iteracjami. Mo¿na 
+równie¿ skorzystaæ z metody symulowanego wy¿arzania. 
+
+Przegl¹d ró¿nych usprawnieñ podstawowego algorytmu przeszukiwania lokalnego 
+w zastosowaniu do problemu SAT mo¿na znaleŸæ w \cite{Bohlin}. Znajdujê siê tam 
+równie¿ krótki opis bardziej zaawansowanych algorytmów, takich jak GSAT, WalkSAT, HSAT, Novelty, DLM i SDF.
+
+\section{ALGORYTM GSAT}
+Pierwszym algorytmem zaimplementowanym w ramach projektu bêdzie algorytm GSAT
+\cite{Selman}. Jest to wariant zach³anny algorytmu przeszukiwania lokalnego. Oznaczmy jako $gselect(x,S)$ funkcjê, która z punktów s¹siaduj¹cych z $x$ wybiera ten, który prowadzi do najwiêkszej poprawy. Jako punkty s¹siaduj¹ce z $x$ uznajemy te, które ró¿ni¹ siê wartoœci¹ jednej zmiennej. Wtedy algorytm GSAT przedstawia siê nastêpuj¹co:
+
+\begin{algorithm}
+\begin{algorithmic}
+\STATE $r\gets 0$
+\WHILE {$r < MT$}
+	\STATE wybierz losowo $x^0$
+	\STATE $k\gets 0$
+	\WHILE {$k < MF$}
+		\IF {$C(x^k) = 0$}
+			\RETURN{$x^k$}
+		\ENDIF
+		\STATE $N\gets N(x^k)$
+		\STATE $x^{k+1}\gets gselect(x^k,N)$
+		\STATE $k\gets k +1$
+	\ENDWHILE
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+$MT$ oznacza maksymaln¹ iloœæ prób a $MF$ maksymaln¹ iloœæ iteracji w jednej próbie.
+
+Algorytm rozpoczyna przeszukiwanie od wylosowania pocz¹tkowego przypisania, a 
+nastêpnie wybiera kolejne przypisania z s¹siedztwa bie¿¹cego punktu tak, aby
+iloœæ niespe³nionych klauzul by³a mniejsza. Warto zauwa¿yæ, i¿ mo¿liwe s¹ 
+d³ugie ruchy w obszarach które nie poprawiaj¹ wyniku, tzw. \textsl{plateau}. 
+W podstawowej wersji GSAT mo¿e utkn¹æ w \textsl{plateau}. Aby rozwi¹zaæ ten 
+problem, mo¿na skorzystaæ z nastêpuj¹cych ulepszeñ algorytmu \cite{Selman}:
+
+\begin{itemize}
+\item symulowanego wy¿arzania,
+\item strategii losowego ruchu (ang. {\em Random Walk Strategy}).
+\end{itemize}
+
+Istnieje tak¿e modyfikacja omawianego algorytmu o nazwie WalkSAT, która 
+rozwi¹zuje problem utkniêcia w \textsl{plateau} poprzez wprowadzenie losowego szumu. Nie bêdzie ona jednak przedmiotem implementacji.
+
+\section{ALGORYTM DLM}
+Drugim algorytmem zaimplementowanym w ramach projektu bêdzie algorytm DLM (ang.
+{\em Discrete Lagrange Multiplier} \cite{Shang}. Metody Lagrange'a s¹ klasycznymi metodami rozwi¹zywania ci¹g³ych problemów optymalizacyjnych z ograniczeniami. Przyk³adowo, mno¿niki Lagrange'a mo¿na zastosowaæ do rozwi¹zania 
+nastêpuj¹cego problemu optymalizacyjnego: 
+\begin{equation}
+\begin{split}
+	\min f(x)\\
+ 	g(x) = 0
+\end{split}
+\end{equation}
+gdzie $f(x)$ jest funkcj¹ celu a $g(x)$ funkcj¹ ograniczeñ. Przekszta³cenie
+do problemu optymalizacji bez ograniczeñ nastêpuje poprzez wprowadzenie
+funkcji Lagrange'a zdefiniowanej nastêpuj¹co:
+\begin{equation}
+	L(x, \lambda) = f(x) + \sum_{i=1}^{n}\lambda_i g_i(x)
+\end{equation} 
+gdzie $\lambda = (\lambda_1, \dots, \lambda_n)$ jest wektorem mno¿ników 
+Lagrange'a. Przyk³adowa metoda pierwszego rzêdu ``schodzi w dó³'' w przestrzeni 
+zmiennej $x$ i ``wspina siê'' w przestrzeni mno¿ników Lagrange'a zgodnie z równaniami:
+
+\begin{equation}
+	\begin{split}
+	\frac{dx}{dt} = -\nabla_x L_c(x, \lambda)\\
+	\frac{d\lambda}{dt} = \nabla_\lambda L_c(x, \lambda)
+	\end{split}
+\end{equation}
+Przejœcie do dziedziny dyskretnej nie nastrêcza trudnoœci. Wyczerpuj¹cy
+opis metody mo¿na znaleŸæ w literaturze.
+
+W przypadku SAT bêdziemy rozwi¹zywaæ nastêpuj¹cy problem optymalizacyjny:
+
+\begin{equation}
+	\begin{split}
+	\min H(x) \\
+	C_i(x) = 0 \quad \forall i \in \{1,2,\dots,n\}
+	\end{split}
+\end{equation}
+
+Gdzie funkcj¹ celu jest $H(x)$ a ograniczeniem warunek mówi¹cy o tym, i¿ 
+liczba niespe³nionych klauzul ma byæ równa zero. Algorytm DLM szuka
+punktu siod³owego funkcji Lagrange'a okreœlonej jako:
+
+\begin{equation}
+	L(x,\lambda) = H(x) +\lambda^T U(x)
+\end{equation}
+
+Funkcja celu $H(x)$ jest wprowadzona sztucznie i musi byæ tak dobrana, aby punkty siod³owe znajdowane przez algorytm DLM by³y rozwi¹zaniami problemu SAT. Przyk³adowo, mo¿na funkcjê $H(x)$ okreœliæ w nastêpuj¹cy sposób:
+
+\begin{equation}
+	\begin{split}
+		H(x) = 
+		\begin{cases}
+			\sum_{i=1}^n l_i C_i(x), \\
+			\sum_{i=1}^n (l_{max} + 1 - l_i) C_i(x), \\
+			\sum_{i=1}^n w_i C_i(x),
+		\end{cases}
+	\end{split}
+\end{equation}
+gdzie $l_i$ jest liczb¹ zmiennych w klauzuli $C_i$, $l_{max} = \max_{i=1}^n l_i$, a $w_i$ jest pewn¹ sta³¹ dodatni¹ (wag¹). Pierwsza funkcja nadaje wiêksz¹ wagê d³u¿szym klauzulom, druga dzia³a w odwrotny sposób. Trzecia u¿ywa arbitralnych wag. Decyduj¹c siê na trzeci¹ mo¿liwoœæ, funkcja Lagrange'a bêdzie
+wygl¹da³a nastêpuj¹co:
+\begin{equation}
+	L(x, \lambda) = N(x) + \lambda^T C(x) = \sum_{i=1}^n(w_i +\lambda_i) C_i(x)
+\end{equation}
+
+Zdefiniujmy operator gradientu dyskretnego $\Delta_x L(x, \lambda)$ dla przypisania $x$ tak, ¿e wskazuje on na stan $x^\prime$ w otoczeniu punktu $x$ o 
+odleg³oœci Hamminga równej 1, daj¹cy najwiêksz¹ poprawê funkcji $L(x,\lambda)$.
+Jeœli ¿aden z rozwa¿anych stanów w otoczeniu punktu $x$ nie daje poprawy, to 
+$\Delta_x L(x,\lambda) = 0$. Mo¿emy teraz przedstawiæ ogólny schemat dzia³ania algorytmu DLM:
+\begin{algorithm}
+\begin{algorithmic}
+	\STATE wybierz pocz¹tkowe $x_0$
+	\STATE wybierz pocz¹tkowe $\lambda$
+	\WHILE{$N(x) > 0 $}
+		\STATE $x\gets x \oplus \Delta_x L(x, \lambda)$
+		\IF{warunek aktualizacji $\lambda$ jest spe³niony}
+			\STATE $\lambda\gets \lambda +c \times C(x)$
+		\ENDIF
+	\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
+W \cite{Shang} mo¿na znaleŸæ du¿o bardziej wyczerpuj¹cy opis algorytmu z
+naciskiem na szczegó³y implementacyjne (np. warunek aktualizacji wektora $\lambda$). W dokumentacji koñcowej znajdzie siê dok³adniejszy opis wariantu wybranego do implementacji.
+
+\section{IMPLEMENTACJA}
+Omawiane algorytmy zostan¹ zaimplementowane w jêzyku Java. Do parsowania wyra¿eñ
+boolowskich zastosowana zostanie biblioteka AIMA. Szczegó³y implementacyjne 
+pojawi¹ siê w dokumentacji koñcowej. Program zostanie przygotowany w sposób
+umo¿liwiaj¹cy ³atw¹ zamianê algorytmów oraz kryteriów stopu.
+
+\section{TESTOWANIE}
+Ocena jakoœci konkretnego algorytmu odbywaæ siê bêdzie na podstawie analizy jego przebiegu dla pewnej liczby trudnych problemów 3-SAT. Istnieje mo¿liwoœæ losowego wygenerowania wyra¿eñ logicznych, jednak nale¿y bardzo uwa¿aæ przy doborze
+parametrów rozk³adu. W przypadku Ÿle dobranych parametrów, wygenerowane wyra¿enia mog¹ byæ trywialne do rozwi¹zania i spe³nione przez losowo wygenerowane przypisanie. Aby unikn¹æ tych trudnoœci, do oceny wykorzystane zostan¹ gotowe zestawy trudnych problemów. Mo¿na je znaleŸæ np. na stronie
+\url{http://www.satlive.org/}.  
+
+Przy ocenie bêdzie brana przede wszystkim szeroko pojêta wydajnoœæ algorytmu. 
+Dla prostszych problemów mo¿na przyj¹æ jako kryterium jakoœci iloœæ iteracji lub czas dzia³ania algorytmu w którym zadanie zostanie rozwi¹zane. Dla trudniejszych problemów, które mog¹ pozostaæ nierozwi¹zane, mo¿na badaæ iloœæ niespe³nionych 
+klauzul po up³ywie ustalonego czasu lub pewnej iloœci iteracji. 
+
+\begin{thebibliography}{99}
+\bibitem{Bohlin} M.~Bohlin, \textit{Local Search Techniques for SAT}
+\bibitem{Selman} B.~Selman, H.~A.~Kautz, B.~Cohen, \textit{Local Search
+Strategies for Satisfiability Testing}
+\bibitem{Shang} Y.~Shang, B.~W.~Wah, \textit{Improving the Performance of Discrete Lagrange-Multiplier Search for Solving Hard SAT Problems}
+\end{thebibliography}
+
+
+\end{document}
