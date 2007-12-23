@@ -1,18 +1,18 @@
 package wmh.satsolver;
 
 /**
- * Abstrakcyjna klasa dla metod przeszukiwania lokalnego dla problemu SAT.
+ * Abstrakcyjna klasa algorytmów przeszukiwania lokalnego dla problemu SAT.
  */
 public abstract class AbstractLocalSearchSolver extends AbstractSolver {
     /**
-     * Punkt roboczy w przestrzeni przypisañ
+     * Bie¿¹cy punkt roboczy w przestrzeni przypisañ
      */
     protected Assignment currentAssignment;
 
     /**
-     *
-     * @param formulaToSolve
-     * @param initialAssignment
+     * Tworzy nowy solver wykorzystuj¹cy przeszukiwanie lokalne
+     * @param formulaToSolve formu³a do rozwi¹zania
+     * @param initialAssignment przypisanie startowe
      */
     protected AbstractLocalSearchSolver(BooleanFormula formulaToSolve,
                                         Assignment initialAssignment) {
@@ -21,7 +21,8 @@ public abstract class AbstractLocalSearchSolver extends AbstractSolver {
     }
 
     /**
-     * Klasy potomne 
+     * Wykonuje pojedynczy krok przeszukiwania lokalnego poprzez modyfikacjê
+     * bie¿¹cego przypisania. Klasy potomne implementuj¹ tê metodê.
      */
     protected abstract void nextStep();
 

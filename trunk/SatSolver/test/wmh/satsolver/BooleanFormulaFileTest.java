@@ -6,13 +6,13 @@ import wmh.satsolver.input.CnfFileLoadingException;
 
 public class BooleanFormulaFileTest {
 	public static void main(String[] args) throws CnfFileLoadingException {
-		BooleanFormula bf = BooleanFormulaReader.read("uf20-04.cnf");
+		BooleanFormula bf = BooleanFormulaReader.readDimacs("uf20-04.cnf");
         Assignment bestStartingPoint =
                 AssignmentFactory.getRandomAssignment(bf.getNumVarsPerClause());
         System.out.println(bestStartingPoint);
         AbstractSolver solver = new WalkSatSolver(bf,
                 bestStartingPoint,
-                0.0f);
+                0.2f);
         solver.solve();
     }
 }

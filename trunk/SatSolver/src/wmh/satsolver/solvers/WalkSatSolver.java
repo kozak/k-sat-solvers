@@ -6,18 +6,33 @@ import wmh.satsolver.Assignment;
 import wmh.satsolver.Clause;
 
 import java.util.Random;
-import java.security.SecureRandom;
-
 import org.apache.log4j.Logger;
 
+/**
+ * Algorytm WalkSAT. W ka¿dym kroku wybierana jest losowo jedna z dwóch mo¿liwoœci:
+ * <ul>
+ * <li>Krok zach³anny (zgodnie z algorytmem GSAT)</li>
+ * <li>Wybór pewnej niespe³nionej klauzuli a nastêpnie zmiana wartoœci zmiennej z tej
+ * klauzuli w bie¿¹cym przypisaniu</li>
+ * </ul>
+ */
 public class WalkSatSolver extends AbstractLocalSearchSolver {
     private Logger logger = Logger.getLogger(getClass());
     private Random random = new Random();
     private float randomWalkProb;
 
+    /**
+     * Tworzy nowy solver implementuj¹cy algorytm WalkSAT
+     * @param formulaToSolve formu³a logiczna do rozwi¹zania
+     * @param initialAssignment przypisanie startowe
+     * @param randomWalkProb prawdopodobieñstwo ruchu losowego
+     */
     public WalkSatSolver(BooleanFormula formulaToSolve,
                          Assignment initialAssignment, float randomWalkProb) {
         super(formulaToSolve, initialAssignment);
+        if ((randomWalkProb < 0.0f) || (randomWalkProb > 1.0f)) {
+            throw new IllegalArgumentException("Probability of random walk must lie within range 0-1");
+        }
         this.randomWalkProb = randomWalkProb;
     }
 
