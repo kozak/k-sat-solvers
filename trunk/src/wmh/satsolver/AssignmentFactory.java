@@ -1,6 +1,5 @@
 package wmh.satsolver;
 
-import java.security.SecureRandom;
 import java.util.Random;
 
 /**
