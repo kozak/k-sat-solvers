@@ -1,12 +1,13 @@
 package wmh.satsolver.solvers;
 
+import org.apache.log4j.Logger;
 import wmh.satsolver.AbstractLocalSearchSolver;
-import wmh.satsolver.BooleanFormula;
 import wmh.satsolver.Assignment;
+import wmh.satsolver.BooleanFormula;
 import wmh.satsolver.Clause;
 
 import java.util.Random;
-import org.apache.log4j.Logger;
+
 
 /**
  * Algorytm WalkSAT. W ka¿dym kroku wybierana jest losowo jedna z dwóch mo¿liwoœci:
@@ -36,7 +37,7 @@ public class WalkSatSolver extends AbstractLocalSearchSolver {
         this.randomWalkProb = randomWalkProb;
     }
 
-    protected void nextStep() {
+    protected boolean nextStep() {
         if (random.nextFloat() < randomWalkProb) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Making random step");
@@ -54,5 +55,6 @@ public class WalkSatSolver extends AbstractLocalSearchSolver {
         } else {
             currentAssignment.makeBestFlip(formulaToSolve);
         }
+        return true;
     }
 }

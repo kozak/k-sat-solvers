@@ -1,5 +1,7 @@
 package wmh.satsolver;
 
+import java.text.MessageFormat;
+
 /**
  * Abstrakcyjna klasa algorytmów przeszukiwania lokalnego dla problemu SAT.
  */
@@ -8,6 +10,7 @@ public abstract class AbstractLocalSearchSolver extends AbstractSolver {
      * Bie¿¹cy punkt roboczy w przestrzeni przypisañ
      */
     protected Assignment currentAssignment;
+    protected int iteration;
 
     /**
      * Tworzy nowy solver wykorzystuj¹cy przeszukiwanie lokalne
@@ -23,18 +26,25 @@ public abstract class AbstractLocalSearchSolver extends AbstractSolver {
     /**
      * Wykonuje pojedynczy krok przeszukiwania lokalnego poprzez modyfikacjê
      * bie¿¹cego przypisania. Klasy potomne implementuj¹ tê metodê.
+     * @return czy robic nastepny krok
      */
-    protected abstract void nextStep();
+    protected abstract boolean nextStep();
 
     public Assignment solve() {
-        int iteration = 1;
+        iteration = 1;
         while (!formulaToSolve.isSatisfiedBy(currentAssignment)) {
             System.out.println("iteration = " + iteration);
             System.out.println("Num sat = " + formulaToSolve.getNumSatisfiedClauses(currentAssignment)
-                    + "/" + formulaToSolve.genNumClauses());
-            nextStep();
+                    + "/" + formulaToSolve.getNumClauses());
+
+            if (!nextStep()) {
+                break;
+            }
             ++iteration;
         }
+        System.out.println(MessageFormat.format("Solver result: iteration = {0} num sat = {1}",
+                                                iteration,
+                                                formulaToSolve.getNumSatisfiedClauses(currentAssignment)));
         return currentAssignment;
     }
 }

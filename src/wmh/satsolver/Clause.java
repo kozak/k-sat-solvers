@@ -57,7 +57,11 @@ public class Clause {
 		return false;
 	}
 
-	public String toString() {
+    public int evalSatisified(Assignment assignment){
+        return isSatisfiedBy(assignment) ? 0 : 1;
+    }
+
+    public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(' ');
         for (int variable : variables) {

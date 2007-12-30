@@ -1,16 +1,19 @@
 package wmh.satsolver.input;
 
 import wmh.satsolver.BooleanFormula;
-import wmh.satsolver.input.CnfFileLoadingException;
 import wmh.satsolver.Clause;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.LineNumberReader;
 import java.io.IOException;
-import java.util.*;
-import java.util.regex.Pattern;
+import java.io.LineNumberReader;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.List;
+import java.util.Scanner;
+import java.util.StringTokenizer;
+import java.util.regex.Pattern;
 
 /**
  * Obsluguje wczytywanie formu³ logicznych z plików
@@ -157,7 +160,8 @@ public class BooleanFormulaReader {
                                 "Maximum number of clauses defined in problem line exceeded",
                                 reader.getLineNumber());
                     }
-                    int[] varArray = java.util.Arrays.copyOf(variables.array(), variables.position());
+                    int [] varArray = new int[variables.position()];
+                    System.arraycopy( variables.array(), 0, varArray, 0, variables.position());
                     clauses.add(new Clause(varArray));
                     variables.position(0);
                 } else {

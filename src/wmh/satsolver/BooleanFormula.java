@@ -1,9 +1,8 @@
 package wmh.satsolver;
 
-import java.util.List;
-import java.util.Iterator;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Formu³a logiczna
@@ -92,7 +91,7 @@ public class BooleanFormula {
      * Pobiera liczbê klauzul wchodz¹cych w sk³ad formu³y
      * @return liczba klauzul wchodz¹cych w sk³ad formu³y
      */
-    public int genNumClauses() {
+    public int getNumClauses() {
         return clauses.length;
     }
 
@@ -102,5 +101,10 @@ public class BooleanFormula {
      */
     public int getNumVarsPerClause() {
         return numVarsPerClause;
+    }
+
+
+    public Clause[] getClauses() {
+        return clauses;
     }
 }

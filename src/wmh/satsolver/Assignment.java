@@ -120,10 +120,11 @@ public class Assignment {
             flip(i);
             int numSatisfiedClauses = bf.getNumSatisfiedClauses(this);
 
-            if (numSatisfiedClauses == bf.genNumClauses()) {
+            if (numSatisfiedClauses == bf.getNumClauses()) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Flipping best bit " + bestFlipIndex +
                             (bitValues[bestFlipIndex] ? " 1->0" :  "0->1"));
+
                 }
                 return;
             }
