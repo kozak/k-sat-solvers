@@ -29,7 +29,7 @@ public class DLMA1 extends AbstractDLMSolver {
     }
 
 
-    protected boolean nextStep() {
+    protected void nextStep() {
         Clause[] clauses = formulaToSolve.getClausesNotSatisfiedBy(currentAssignment);
         if (clauses.length <= GAMMA) {
             if (Log.isDebugEnabled()) {
@@ -46,6 +46,5 @@ public class DLMA1 extends AbstractDLMSolver {
                 multipliers.update();
             }
         }
-        return true;
     }
 }

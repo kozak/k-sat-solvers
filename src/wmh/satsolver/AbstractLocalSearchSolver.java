@@ -1,16 +1,27 @@
 package wmh.satsolver;
 
-import java.text.MessageFormat;
+import org.apache.log4j.Logger;
 
 /**
  * Abstrakcyjna klasa algorytmów przeszukiwania lokalnego dla problemu SAT.
  */
 public abstract class AbstractLocalSearchSolver extends AbstractSolver {
+    protected Logger logger = Logger.getLogger(getClass());
     /**
      * Bie¿¹cy punkt roboczy w przestrzeni przypisañ
      */
     protected Assignment currentAssignment;
-    protected int iteration;
+
+    /**
+     * Najlepszy dotychczasowe przypisanie (zak³adamy, ¿e podczas
+     * przeszukiwania mo¿e dojœæ do pogroszenia wyniku)
+     */
+    protected Assignment bestAssignment;
+
+    /**
+     * Czas rozpoczecia algorytmu
+     */
+    private long startTime;
 
     /**
      * Tworzy nowy solver wykorzystuj¹cy przeszukiwanie lokalne
@@ -26,25 +37,43 @@ public abstract class AbstractLocalSearchSolver extends AbstractSolver {
     /**
      * Wykonuje pojedynczy krok przeszukiwania lokalnego poprzez modyfikacjê
      * bie¿¹cego przypisania. Klasy potomne implementuj¹ tê metodê.
-     * @return czy robic nastepny krok
      */
-    protected abstract boolean nextStep();
+    protected abstract void nextStep();
 
     public Assignment solve() {
-        iteration = 1;
-        while (!formulaToSolve.isSatisfiedBy(currentAssignment)) {
-            System.out.println("iteration = " + iteration);
-            System.out.println("Num sat = " + formulaToSolve.getNumSatisfiedClauses(currentAssignment)
-                    + "/" + formulaToSolve.getNumClauses());
+        startTime = System.currentTimeMillis();
+        taskStats.setNumIterations(0);
+        bestAssignment = currentAssignment;
+        /* Pêtla przeszukiwania lokalnego, która wykonuje siê a¿
+            - zostanie znalezione rozwi¹zanie, lub,
+            - bêdzie spe³niony chocia¿ jeden warunek stopu */
+        while (!formulaToSolve.isSatisfiedBy(currentAssignment) &&
+                !isStopNeeded()) {
+            nextStep();
 
-            if (!nextStep()) {
-                break;
+            int numSatByCurrent = formulaToSolve.getNumSatisfiedClauses(currentAssignment);
+            int numSatByBest = formulaToSolve.getNumSatisfiedClauses(bestAssignment);
+
+            if (numSatByCurrent > numSatByBest) {
+                bestAssignment = currentAssignment;
             }
-            ++iteration;
+
+            updateStats();
+            if (logger.isDebugEnabled()) {
+                logger.debug(taskStats);
+            }
         }
-        System.out.println(MessageFormat.format("Solver result: iteration = {0} num sat = {1}",
-                                                iteration,
-                                                formulaToSolve.getNumSatisfiedClauses(currentAssignment)));
-        return currentAssignment;
+
+//        System.out.println(MessageFormat.format("Solver result: iteration = {0} num sat = {1}",
+//                                                iteration,
+//                                                formulaToSolve.getNumSatisfiedClauses(currentAssignment)));
+        return bestAssignment;
+    }
+
+    private void updateStats() {
+        taskStats.incNumIterations();
+        taskStats.setNumSatisfiedClauses(formulaToSolve.getNumSatisfiedClauses(currentAssignment));
+        taskStats.setBestNumSatisfiedClauses(formulaToSolve.getNumSatisfiedClauses(bestAssignment));
+        taskStats.setElapsedTime(System.currentTimeMillis() - startTime);
     }
 }
