@@ -3,6 +3,8 @@ package wmh.satsolver;
 import org.apache.log4j.Logger;
 
 import java.util.Random;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Wektor przypisania opisuj¹cy wartoœci zmiennych.
@@ -106,16 +108,17 @@ public class Assignment {
      * Modyfikuje przypisanie poprzez zmianê jednego bitu tak, aby
      * osi¹gn¹æ najlepsz¹ poprawê, jeœli chodzi o liczbê spe³nionych klauzul.
      * Jeœ³i jest kilka równorzêdnych przypisañ do wyboru, wybierane jest pierwsze
-     * na które narafiono.
+     * na które narafiono, chyba ¿e w³¹czone jest ustawienie randomFromBest
      * @param bf formu³a logiczna, dla której ma byæ znalezione najlepsze
      * przypisanie osi¹galne przez zmianê jednego bitu
+     * @param randomFromBest czy wybieraæ losowo bit do zmiany jeœli jest wiele bitów
+     * powoduj¹cych taki sam przyrost spe³nionych klauzul
      */
-    public void makeBestFlip(BooleanFormula bf) {
-        /* TODO: dodaæ parametr, który okreœla³by czy w wypadku równorzêdnych
-        przypisañ (powoduj¹cych tak¹ sam¹ poprawê) wybieraæ pierwsze z brzegu, czy
-        losowo wybrane */
+    public void makeBestFlip(BooleanFormula bf, boolean randomFromBest) {
         int maxSatisfiedClauses = 0;
         int bestFlipIndex = 0;
+        List<Integer> bestFlipIndices = new ArrayList<Integer>();
+
         for (int i = 0; i < getSize(); i++) {
             flip(i);
             int numSatisfiedClauses = bf.getNumSatisfiedClauses(this);
@@ -124,15 +127,38 @@ public class Assignment {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Flipping best bit " + bestFlipIndex +
                             (bitValues[bestFlipIndex] ? " 1->0" :  "0->1"));
-
                 }
                 return;
             }
+
+            if (randomFromBest) {
+                if (numSatisfiedClauses == maxSatisfiedClauses) {
+                    bestFlipIndices.add(i);
+                }
+            }
+
             if (numSatisfiedClauses > maxSatisfiedClauses) {
                 maxSatisfiedClauses = numSatisfiedClauses;
-                bestFlipIndex = i;
+                if (randomFromBest) {
+                    bestFlipIndices.clear();
+                    bestFlipIndices.add(i);
+                } else {
+                    bestFlipIndex = i;
+                }
             }
             flip(i);
+        }
+        if (randomFromBest) {
+            if (logger.isDebugEnabled()) {
+                StringBuilder sb = new StringBuilder("Candidates for flipping:");
+                for (Integer bestFlipCandidate : bestFlipIndices) {
+                    sb.append(" ").append(bestFlipCandidate);
+                }
+                logger.debug(sb);
+            }
+            bestFlipIndex = bestFlipIndices.get(
+                    Math.abs(getRandom().nextInt()) % bestFlipIndices.size()
+            );
         }
         if (logger.isDebugEnabled()) {
             logger.debug("Flipping best bit " + bestFlipIndex +
