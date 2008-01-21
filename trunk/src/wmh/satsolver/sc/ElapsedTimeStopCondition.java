@@ -10,9 +10,9 @@ public class ElapsedTimeStopCondition implements StopCondition {
     /**
      * Czas po jakim zakoñczyæ zadanie (w milisekundach);
      */
-    private int maxElapsedTime;
+    private long maxElapsedTime;
 
-    public ElapsedTimeStopCondition(int maxElapsedTime) {
+    public ElapsedTimeStopCondition(long maxElapsedTime) {
         this.maxElapsedTime = maxElapsedTime;
     }
 

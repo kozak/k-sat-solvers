@@ -17,7 +17,7 @@ public class BooleanFormulaFileTest {
 
         Thread t1 = new Thread() {
             public void run() {
-                testWalkSat(bf, bestStartingPoint);
+                //testWalkSat(bf, bestStartingPoint);
                 testDLMA1(bf, bestStartingPoint2);
             }
 
@@ -38,7 +38,7 @@ public class BooleanFormulaFileTest {
     }
 
     private static void testDLMA1(BooleanFormula bf, Assignment bestStartingPoint) {
-        AbstractSolver solver = new DLMA1(bf, bestStartingPoint, 1, 20);
+        AbstractSolver solver = new DLMA1(bf, bestStartingPoint, 10, 20);
         solver.addStopCondition(new ElapsedTimeStopCondition(10000));
         solver.solve();
     }
