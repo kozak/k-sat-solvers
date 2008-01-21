@@ -62,7 +62,7 @@ public class SatSolver {
             // Timelimit w opcjach dotyczy calego przebiegu, wiec
             // wyliczamy go dla pojedynczej iteracji (timeLimit / numIters)
             long timeLimitPerIteration = (long) Math.ceil((double)options.scTimeLimit / options.numRestarts);
-            logger.debug("Time limit: " + options.scTimeLimit + ", per iteration: " + timeLimitPerIteration);
+            logger.debug("Time limit: " + options.scTimeLimit + "ms, per iteration: " + timeLimitPerIteration + " ms");
             stopConditions.add(new ElapsedTimeStopCondition(timeLimitPerIteration));
         }
 
@@ -102,7 +102,8 @@ public class SatSolver {
             if (logger.isDebugEnabled()) {
                 TaskStats stats = walkSAT.taskStats;
                 logger.debug("WalkSAT ended after " + stats.getNumIterations() +
-                " iterations, " + stats.getElapsedTime() + " ms");
+                " iterations, " + stats.getElapsedTime() + " ms, satisfied clauses = "
+                        + stats.getBestNumSatisfiedClauses());
             }
 
             int numSatByWS = formulaToSolve.getNumSatisfiedClauses(asFoundByWS);
@@ -111,8 +112,7 @@ public class SatSolver {
                 numSatForBestWS = numSatByWS;
             }
 
-            AbstractSolver dlm = new DLMA1(formulaToSolve, iniAssignmentDLM,
-                    options.dlmC, options.dlmGamma);
+            AbstractSolver dlm = new DLMA1(formulaToSolve, iniAssignmentDLM, options.dlmGamma);
 
 	        for (StopCondition stopCondition : stopConditions) {
 		        dlm.addStopCondition(stopCondition);
@@ -120,7 +120,12 @@ public class SatSolver {
 
 	        logger.debug("Starting DLM");
             Assignment asFoundByDLM = dlm.solve();
-	        logger.debug("DLM ended");
+            if (logger.isDebugEnabled()) {
+                TaskStats stats = dlm.taskStats;
+                logger.debug("DLM ended after " + stats.getNumIterations() +
+                        " iterations, " + stats.getElapsedTime() + " ms, satisfied clauses = "
+                        + stats.getBestNumSatisfiedClauses());
+            }
             int numSatByDLM = formulaToSolve.getNumSatisfiedClauses(asFoundByDLM);
             if (numSatByDLM > numSatForBestDLM) {
                 bestAsFoundByDLM = asFoundByDLM;
@@ -144,8 +149,10 @@ public class SatSolver {
             options.scMaxIters = Integer.parseInt(properties.getProperty("sc.maxiters"));
             options.scTimeLimit = Long.parseLong(properties.getProperty("sc.timelimit"));
 
-            options.dlmC = Integer.parseInt(properties.getProperty("dlm.c"));
             options.dlmGamma = Integer.parseInt(properties.getProperty("dlm.gamma"));
+
+            options.rmProb = Float.parseFloat(properties.getProperty("walksat.rmprob"));
+            options.rndBest = Boolean.parseBoolean(properties.getProperty("walksat.rndbest"));
 
         } finally {
             fis.close();
@@ -159,7 +166,6 @@ public class SatSolver {
         public int scMaxIters;
         public long scTimeLimit;
 
-        public int dlmC;
         public int dlmGamma;
 
         public float rmProb;

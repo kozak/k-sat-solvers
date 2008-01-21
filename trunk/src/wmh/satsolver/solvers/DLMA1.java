@@ -13,6 +13,7 @@ public class DLMA1 extends AbstractDLMSolver {
 
 
     private final int GAMMA;
+    private static final int C = 1;
 
     /**
      * Tworzy nowy solver wykorzystuj¹cy przeszukiwanie lokalne
@@ -23,7 +24,7 @@ public class DLMA1 extends AbstractDLMSolver {
      * @param GAMMA             wielkosc wyznaczajaca moment przejscia z trybu modyfikacji zmiennych jedna po drugiej do
      *                          trybu modyfikacji w niespe³nionych klauzulach
      */
-    public DLMA1(BooleanFormula formulaToSolve, Assignment initialAssignment, int C, int GAMMA) {
+    public DLMA1(BooleanFormula formulaToSolve, Assignment initialAssignment, int GAMMA) {
         super(formulaToSolve, initialAssignment, C);
         this.GAMMA = GAMMA;
     }
