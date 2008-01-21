@@ -21,7 +21,7 @@ public class DLMA1 extends AbstractDLMSolver {
      * @param initialAssignment przypisanie startowe
      * @param C                 waga uzywana przy aktualizacji mnoznikow lagranga
      * @param GAMMA             wielkosc wyznaczajaca moment przejscia z trybu modyfikacji zmiennych jedna po drugiej do
-     *                          trybu modyfikacji w nie usatysfakcjonowanych klauzurach
+     *                          trybu modyfikacji w niespe³nionych klauzulach
      */
     public DLMA1(BooleanFormula formulaToSolve, Assignment initialAssignment, int C, int GAMMA) {
         super(formulaToSolve, initialAssignment, C);

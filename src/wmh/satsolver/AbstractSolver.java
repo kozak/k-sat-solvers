@@ -39,8 +39,8 @@ public abstract class AbstractSolver {
 
     /**
      * Czy algorytm powinien byæ zatrzymany
-     * @return czy true jeœli alborytm powinien byæ zatrzymany na podstawie
-     * kryterium, false w przeciwnym przypadku
+     * @return czy true jeœli algorytm powinien byæ zatrzymany na podstawie
+     * zadanego kryterium, false w przeciwnym przypadku
      */
     protected boolean isStopNeeded() {
         for (StopCondition stopCondition : stopConditions) {
