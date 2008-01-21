@@ -20,6 +20,7 @@ public class SatSolver {
     public static void main(String[] args) {
         if (args.length != 2) {
             System.out.println("Usage: satsolver problem_file cfg_file");
+	        System.exit(-1);
         }
 
         String problemFileName = args[0];
@@ -81,7 +82,7 @@ public class SatSolver {
 
 
         for (int i = 0; i < options.numRestarts; i++) {
-            logger.debug("BIG Iteration " + i + "/" + options.numRestarts);
+            logger.debug("BIG Iteration " + (i + 1) + "/" + options.numRestarts);
             // Tworzymy losowe przypisanie i jego kopie, gdyz jest ono modyfikowane w miejscu
             Assignment initialAssignmentWS =
                     AssignmentFactory.getRandomAssignment(formulaToSolve.getNumVarsPerClause());
@@ -91,6 +92,11 @@ public class SatSolver {
                     + options.rndBest);
             AbstractSolver walkSAT = new WalkSatSolver(formulaToSolve,
                     initialAssignmentWS, options.rmProb, options.rndBest);
+
+	        for (StopCondition stopCondition : stopConditions) {
+		        walkSAT.addStopCondition(stopCondition);
+	        }
+
             Assignment asFoundByWS = walkSAT.solve();
 
             if (logger.isDebugEnabled()) {
@@ -107,7 +113,14 @@ public class SatSolver {
 
             AbstractSolver dlm = new DLMA1(formulaToSolve, iniAssignmentDLM,
                     options.dlmC, options.dlmGamma);
+
+	        for (StopCondition stopCondition : stopConditions) {
+		        dlm.addStopCondition(stopCondition);
+	        }
+
+	        logger.debug("Starting DLM");
             Assignment asFoundByDLM = dlm.solve();
+	        logger.debug("DLM ended");
             int numSatByDLM = formulaToSolve.getNumSatisfiedClauses(asFoundByDLM);
             if (numSatByDLM > numSatForBestDLM) {
                 bestAsFoundByDLM = asFoundByDLM;
@@ -116,7 +129,7 @@ public class SatSolver {
         }
 
         System.out.println("Number of sat. clauses by WalkSAT =  " + numSatForBestWS);
-        System.out.println("Number of sat. clauses by DLM =  " + numSatForBestWS);
+        System.out.println("Number of sat. clauses by DLM =  " + numSatForBestDLM);
     }
 
     private static SolverOptions loadFromFile(String fileName) throws IOException {
