@@ -41,7 +41,7 @@ public abstract class AbstractLocalSearchSolver extends AbstractSolver {
     protected abstract void nextStep();
 
     public Assignment solve() {
-        startTime = System.currentTimeMillis();
+        startTime = System.nanoTime();
         taskStats.setNumIterations(0);
         bestAssignment = currentAssignment;
         /* Pêtla przeszukiwania lokalnego, która wykonuje siê a¿
@@ -74,6 +74,6 @@ public abstract class AbstractLocalSearchSolver extends AbstractSolver {
         taskStats.incNumIterations();
         taskStats.setNumSatisfiedClauses(formulaToSolve.getNumSatisfiedClauses(currentAssignment));
         taskStats.setBestNumSatisfiedClauses(formulaToSolve.getNumSatisfiedClauses(bestAssignment));
-        taskStats.setElapsedTime(System.currentTimeMillis() - startTime);
+        taskStats.setElapsedTime(System.nanoTime() - startTime);
     }
 }

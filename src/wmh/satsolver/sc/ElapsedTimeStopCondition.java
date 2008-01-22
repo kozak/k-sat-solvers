@@ -17,6 +17,6 @@ public class ElapsedTimeStopCondition implements StopCondition {
     }
 
     public boolean isStopNeeded(TaskStats stats) {
-        return (stats.getElapsedTime() >= maxElapsedTime);
+        return (stats.getElapsedTime() >= maxElapsedTime * 1000000);
     }
 }
