@@ -106,8 +106,8 @@ Okaza³o siê jednak ¿e mo¿na go bardzo ³atwo zmodyfikowaæ w celu uzyskania algory
 zosta³o uczynione.
 
 Oznaczmy jako $gselect(x,S)$ funkcjê, która z punktów s¹siaduj¹cych z $x$ wybiera ten, 
-który prowadzi do najwiêkszej poprawym, a jako $rselect(x,S)$ funkcjê, która z s¹siedztwa $x$ 
-wybiera punkt osi¹galny poprzed modyfikacjê jednej zmiennej w niespe³nionych klauzulach. 
+który prowadzi do najwiêkszej poprawy, a jako $rselect(x,S)$ funkcjê, która z s¹siedztwa $x$ 
+wybiera punkt osi¹galny poprzez modyfikacjê jednej zmiennej w niespe³nionych klauzulach. 
 Jako punkty s¹siaduj¹ce z $x$ uznajemy te, 
 które ró¿ni¹ siê wartoœci¹ jednej zmiennej. Wtedy algorytm WalkSAT przedstawia siê nastêpuj¹co:
 
@@ -235,13 +235,39 @@ $\Delta_x L(x,\lambda) = 0$. Mo¿emy teraz przedstawiæ ogólny schemat dzia³ania a
 \end{algorithmic}
 \end{algorithm}
 
+W naszej implementacji istnieje dodatkowo parametr $gamma$ wyznaczaj¹cy liczbê niespe³nionych klauzul,
+powy¿ej której nastêpuje prze³¹czenie pomiêdzy trybem
 
 \section{IMPLEMENTACJA}
 \subsection{Œrodowisko}
-Omawiane algorytmy zostan¹ zaimplementowane w jêzyku Java. Do parsowania wyra¿eñ
-boolowskich zastosowana zostanie biblioteka AIMA. Szczegó³y implementacyjne 
-pojawi¹ siê w dokumentacji koñcowej. Program zostanie przygotowany w sposób
-umo¿liwiaj¹cy ³atw¹ zamianê algorytmów oraz kryteriów stopu.
+Algorytmy zosta³y zaimplementowane w jêzyku Java. Do kompilacji i uruchomienia wymagany jest
+pakiet \verb|JDK 5| (zalecamy \verb|JDK 6|). Klasy i metody w kodzie Ÿród³owym s¹ opisane
+a dokumentacja mo¿e byæ wygenerowana z u¿yciem polecenia \verb|javadoc|. Poni¿ej znajduje siê
+krótki opis najwa¿niejszych klas:
+
+\begin{itemize}
+    \item \verb|Clause|: klauzula zawieraj¹ca pewn¹ liczbê zmiennych
+    \item \verb|BooleanFormula|: formu³a logiczna zawieraj¹ca pewn¹ liczbê klauzul
+    \item \verb|Assignment|: wektor przypisania
+    \item \verb|WalkSatSolver|: klasa implementuj¹ca algorytm WalkSAT
+    \item \verb|DLMA1|: klasa implementuj¹ca algorytm DLM w wersji pierwszej
+    \item \verb|SatSolver|: w tej klasie znajduje siê metoda \verb|main()| aplikacji
+\end{itemize}
+
+Dok³adniejszy opis klas i metod znajduje siê w kodzie Ÿród³owym (jako \verb|javadoc|).
+
+\subsection{Katalog projektu}
+W katalogu projektu znajduj¹ siê nastêpuj¹ce podkatalogi:
+\begin{itemize}
+    \item \verb|docs| - dokumentacja projektu,
+    \item \verb|lib| - wymagane biblioteki w postaci plików jar,
+    \item \verb|out| - miejsce na skompilowane klasy,
+    \item \verb|problems| - przyk³adowe pliki zadañ w postaci DIMACS CNF,
+    \item \verb|resourcescp| - w katalogu tym znajduje siê plik konfiguracyjny logowania,
+    \item \verb|src| - kod Ÿród³owy,
+    \item \verb|tasks| - pliki konfiguracyjne problemów.
+\end{itemize}
+
 
 \subsection{Format pliku zadania}
 Pocz¹tkowe za³o¿yliœmy, ¿e formu³y bêd¹ wprowadzane w postaci symbolicznej a nastêpnie 
@@ -256,7 +282,7 @@ wchodz¹ kolejno:
 \begin{itemize}
     \item Linie komentarzy (opcjonalne, mo¿e byæ ich dowolna iloœæ), gdzie jedna linia ma format
     \verb|c jakis komentarz|
-    \item Linia zadania w formacie \verb|p cnf liczba_zmiennych liczba_klauzul|, np. 
+    \item Linia zadania w formacie \verb|p cnf liczba_zmiennych liczba_klauzul|, np. \\
         \verb|p cnf 2653 19598|
     \item Linie klauzul w postaci \verb|zmienna1 zmienna2 zmienna3 (...) 0| gdzie ka¿da zmienna 
     mo¿e byæ dodatnia lub ujemna w zale¿noœci od tego czy jest w danej klauzuli zanegowana, czy nie. 
@@ -265,6 +291,7 @@ wchodz¹ kolejno:
 \end{itemize}
 
 Dok³adny opis formatu mo¿na znaleŸæ pod adresem \url{http://www.cs.ubc.ca/~babic/doc/dimacs_cnf.pdf}.
+Przyk³adowe pliki z zadaniami w tym formacie mo¿na znaleŸæ w katalogu \verb|problems| projektu.
 
 \subsection{Kompilacja projektu}
 Przed kompilacj¹ nale¿y upewniæ siê ¿e polecenie \verb|javac| jest
@@ -281,30 +308,164 @@ Ze wzglêdu na prostotê zrezygnowaliœmy z u¿ycia narzêdzi wspomagaj¹cych kompilac
 
 \subsection{Uruchomienie projektu}
 Przed uruchomieniem projektu nale¿y upewniæ siê, ¿e polecenie \verb|java| jest dostêpne w
-œcie¿ce wykonania. 
-
-Przyk³adowe pliki z zadaniami w tym formacie mo¿na znaleŸæ w katalogu \verb|problems| projektu.
-
-\subsection{Plik konfiguracyjny zadania}
-Plik konfiguracyjny zadania umo¿liwia:
+œcie¿ce wykonania. W celu uruchomienia aplikacji nale¿y udaæ siê do katalogu projektu i 
+nastêpnie wydaæ polecenie
 
 \begin{itemize}
+    \item \verb|solver.bat plik_zadania plik_konfiguracyjny_zadania| dla systemu Windows, lub, 
+    \item \verb|./solver.sh plik_zadania plik_konfiguracyjny_zadania| dla systemu Linux 
+        (ew. poprzedziæ komend¹ \verb|chmod +x solver.sh|).
+\end{itemize}
+
+Przyk³adowe wywo³ania znajduj¹ siê w sekcji omawiaj¹cej testowanie algorytmu.
+
+\subsection{Plik konfiguracyjny zadania}
+Plik konfiguracyjny zadania umo¿liwia ustawienie:
+
+\begin{itemize}
+    \item maksymalnej liczby iteracji,
+    \item limitu czasowego algorytmu, oraz
+    \item parametrów algorytmów WalkSAT i DLM.
+\end{itemize}
+
+Dok³adny opis poszczególnych parametrów znajduje siê w przyk³adowych plikach.
 
 \subsection{Plik konfiguracyjny logowania}
 Plik konfiguracyjny biblioteki \verb|log4j| znajduje siê w katalogu \verb|resourcescp|. 
 Poprzez zmianê wpisu \verb|INFO| na \verb|DEBUG| mo¿na w³¹czyæ wyœwietlanie dok³adnego przebiegu algorytmu.
 
+\subsection{Przebieg dzia³ania programu}
+Przebieg dzia³ania programu prezentuje siê nastêpuj¹co:
+
+\begin{enumerate}
+    \item Wczytanie pliku zadania
+    \item Wczytanie konfiguracji
+    \item Uruchomienie algorytmu WalkSAT w pêtli ,,du¿ych'' iteracji 
+    \item Uruchomienie algorytmu DLM w pêtli ,,du¿ych'' iteracji
+    \item Wyœwietlenie podsumowania
+\end{enumerate}
+
+Podczas ,,du¿ych'' iteracji (czyli kolejnych uruchomieñ algorytmu z nowym przypisaniem) mo¿e siê
+zdarzyæ, ¿e algorytm znajdzie rozwi¹zanie. Wtedy pêtla ,,du¿ych'' iteracji jest przerywana.
+Zrezygnowaliœmy tak¿e z wyœwietlania rozwi¹zania w postaci zer i jedynek, gdy¿ by³oby to 
+nieporêczne przy liczbie zmiennych wynosz¹cej nawet tysi¹c.
+
 
 \section{TESTOWANIE}
-Ocena jakoœci konkretnego algorytmu odbywaæ siê bêdzie na podstawie 
+Ocena jakoœci konkretnego algorytmu odby³a siê bêdzie na podstawie 
 analizy jego przebiegu dla pewnej liczby trudnych problemów 3-SAT. 
 Istnieje mo¿liwoœæ losowego wygenerowania wyra¿eñ logicznych, jednak nale¿y bardzo uwa¿aæ przy doborze
-parametrów rozk³adu. W przypadku Ÿle dobranych parametrów, wygenerowane wyra¿enia mog¹ byæ trywialne do rozwi¹zania i spe³nione przez losowo wygenerowane przypisanie. Aby unikn¹æ tych trudnoœci, do oceny wykorzystane zostan¹ gotowe zestawy trudnych problemów. Mo¿na je znaleŸæ np. na stronie
-\url{http://www.satlive.org/}.  
+parametrów rozk³adu. W przypadku Ÿle dobranych parametrów, wygenerowane wyra¿enia mog¹ byæ 
+trywialne do rozwi¹zania i spe³nione przez losowo wygenerowane przypisanie. 
+Aby unikn¹æ tych trudnoœci, do oceny wykorzystane zosta³y gotowe pliki trudnych problemów. 
+Mo¿na je znaleŸæ np. na stronie \url{http://www.satlive.org/} w dziale ,,benchmarks''. 
 
-Przy ocenie bêdzie brana przede wszystkim szeroko pojêta wydajnoœæ algorytmu. 
-Dla prostszych problemów mo¿na przyj¹æ jako kryterium jakoœci iloœæ iteracji lub czas dzia³ania algorytmu w którym zadanie zostanie rozwi¹zane. Dla trudniejszych problemów, które mog¹ pozostaæ nierozwi¹zane, mo¿na badaæ iloœæ niespe³nionych 
+Przy ocenie bêdzie brana by³a pod uwagê szeroko pojêta wydajnoœæ algorytmów.
+Dla prostszych problemów mo¿na przyj¹æ jako kryterium jakoœci czas dzia³ania 
+algorytmu w którym zadanie zostanie rozwi¹zane. Dla trudniejszych problemów, 
+które mog¹ pozostaæ nierozwi¹zane, badano iloœæ spe³nionych 
 klauzul po up³ywie ustalonego czasu lub pewnej iloœci iteracji. 
+
+Aby ocena porównawcza algorytmów by³a sprawiedliwa, w kolejnych uruchomieniach
+oba algorytmy startuj¹ z tego samego punktu pocz¹tkowego. Eliminuje to mo¿liwoœæ 
+wylosowania przez jeden z algorytmów punktu który jest bli¿ej rozwi¹zania, tym samym
+daj¹c mu przewagê.
+
+Pierwszy, najprostszy test obejmowa³ formu³ê o 218 klauzulach i 
+50 zmiennych. Zauwa¿my ¿e nawet w tak prostym przypadku przeszukiwanie ca³ej
+przestrzeni musia³oby pokryæ $2^50$ rozwi¹zañ.
+Test uruchamiany jest nastêpuj¹co:
+
+\begin{verbatim}
+    solver.bat problems\pr2.cnf tasks\task0.properties
+\end{verbatim}
+
+Przypadek ten nie pozwala na dobre porównanie algorytmów. 
+Oba algorytmy b³yskawicznie dochodz¹ do rozwi¹zania.
+Przyk³adowe 6 czasów znalezienia rozwi¹zania dla obu algorytmów (w milisekundach):
+
+\vspace{1em}
+
+\begin{tabular}{|l|l|}
+\hline
+WalkSAT & DLM \\
+\hline
+44 & 62\\ \hline
+218 & 39\\ \hline
+52 & 26\\ \hline
+17 & 45\\ \hline
+32 & 116\\ \hline
+38 & 198\\ \hline
+\end{tabular}
+
+\vspace{1em}
+
+Widaæ wyraŸnie jak du¿y jest rozrzut wartoœci. W tym teœcie nie ma wyraŸnego zwyciêzcy; 
+dla tych samych punktów startowych algorytmy zachowuj¹ siê zgo³a odmiennie. Prawdopodobnie
+zbiór testowy jest zbyt trywialny aby móc na nim testowaæ w³aœciwoœci omawianych algorytmów.
+
+Drugi test zosta³ przeprowadzony na formule 
+sk³adaj¹cej siê z 1065 klauzul i 250 zmiennych. 
+Test uruchamiany jest nastêpuj¹co:
+
+\begin{verbatim}
+    solver.bat problems\pr7.cnf tasks\task1.properties
+\end{verbatim}
+
+W tym teœcie algorytmy mog³y startowaæ ponownie z 10 punktów pocz¹tkowych. 
+Podczas kolejnych restartów algorytmy ,,utyka³y'' w miejscu, gdzie spe³nione 
+by³o 1064 spoœród wymaganych 1065 klauzul. Dopiero 5 restart w przypadku 
+DLM a 8 w przypadku WalkSAT pozwoli³ na znalezienie rozwi¹zania. 
+Jednak œrednio mo¿na powiedzieæ, ¿e oba algorytmy spisywa³y siê podobnie.
+
+Trzeci test zosta³ przeprowadzony na przyk³adzie 
+o 4320 klauzulach i 917 zmiennych. Limit czasu wynosi³ ok. 2 godziny, 
+liczba ponownych uruchomieñ - 5.
+Test uruchamiany jest nastêpuj¹co:
+
+\begin{verbatim}
+    solver.bat problems\pr3.cnf tasks\task2.properties
+\end{verbatim}
+
+W tej próbie oba algorytmy mia³y sporo czasu ¿eby pokazaæ swoje dobre strony.
+Z tej próby zwyciêsko wyszed³ DLM, któremu uda³o siê znaleŸæ rozwi¹zanie po
+ok. 10 minutach. WalkSAT przekroczy³ dopuszczalny czas, a najlepsze rozwi¹zanie
+które uda³o mu siê znaleŸæ spe³nia³o 4318 klauzul.
+
+Ostatnim i najtrudniejszym problemem do rozwi¹zania by³a 
+formu³a sk³adaj¹ca siê z 11973 klauzul (1858 zmiennych). 
+Test uruchamiany jest nastêpuj¹co:
+
+\begin{verbatim}
+    solver.bat problems\pr4.cnf tasks\task3.properties
+\end{verbatim}
+
+
+Limit czasowy dla pojedynczego algorytmu jest ustawiony na ok. 2 godziny,
+liczba ,,du¿ych iteracji'' (ponownych uruchomieñ) to 5. Okaza³o siê ¿e to zadanie przeros³o mo¿liwoœci obu algorytmów.
+¯aden z nich nie zdo³a³ dojœæ do rozwi¹zania w wymaganym czasie. Algorytm WalkSAT
+doszed³ do rozwi¹zania w którym 11955 klauzul by³o spe³nionych, natomiast
+w przypadku DLM by³o to 11940 klauzul. 
+
+\section{WNIOSKI KOÑCOWE}
+Zadaniem projektowym by³o zaimplementowanie i porównanie dwóch algorytmów przeszukiwania lokalnego.
+Oba algorytmy nie maj¹ problemu z formu³ami ze stosunkowo ma³¹ liczb¹ klauzul.
+Algorytm WalkSAT radzi sobie bardzo dobrze zwa¿ywszy na jego prostotê. Na uwagê zas³uguje 
+jego szybkoœæ dzia³ania i ³atwoœæ implementacji. Poprzez dodanie do algorytmu GSAT losowego ruchu
+uzyskujemy znaczn¹ poprawê dzia³ania. 
+
+Algorytm DLM cechuje siê du¿o d³u¿szym czasem trwania pojedynczej iteracji. 
+Dla prostych problemów cechuje siê on podobnym czasem dzia³ania co algorytm WalkSAT. 
+Jednak dla trudnego problemu z liczb¹ klauzul wynosz¹c¹ 4320 i liczb¹ zmiennych wynosz¹c¹ 
+917 potrafi on, w przeciwieñstwie do WalkSAT znaleŸæ dok³adne rozwi¹zanie.
+Poprzez wprowadzenie kolejnych modyfikacji opisanych przez autorów algorytmu mo¿na by
+osi¹gn¹æ poprawê wydajnoœci \cite{ShangFirst}.
+
+Warto podkreœliæ ¿e przyk³adowe problemy wykorzystane w testach nie powsta³y na drodze
+,,sztucznej generacji'' a ich Ÿród³em s¹ rzeczywiste zagadnienia takie jak wykrywanie 
+b³êdów przy produkcji procesorów. Problemy typu ,,benchmark'' stanowi¹ nie lada wyzwanie
+dla projektantów algorytmów rozwi¹zuj¹cych problem SAT, która to dziedzina wci¹¿ aktywnie siê 
+rozwija, czego potwierdzeniem s¹ corocznie organizowane zawody i coraz lepsze algorytmy.
 
 \begin{thebibliography}{99}
 \bibitem{Bohlin} M.~Bohlin, \textit{Local Search Techniques for SAT}
@@ -313,6 +474,5 @@ Strategies for Satisfiability Testing}
 \bibitem{ShangFirst} Y.~Shang, B.~W.~Wah, \textit{A Discrete Lagrangian-Based Global-Search method for Satisfiability Problems}
 \bibitem{Shang} Y.~Shang, B.~W.~Wah, \textit{Improving the Performance of Discrete Lagrange-Multiplier Search for Solving Hard SAT Problems}
 \end{thebibliography}
-
 
 \end{document}
