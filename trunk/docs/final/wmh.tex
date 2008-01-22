@@ -106,7 +106,9 @@ Okaza³o siê jednak ¿e mo¿na go bardzo ³atwo zmodyfikowaæ w celu uzyskania algory
 zosta³o uczynione.
 
 Oznaczmy jako $gselect(x,S)$ funkcjê, która z punktów s¹siaduj¹cych z $x$ wybiera ten, 
-który prowadzi do najwiêkszej poprawy. Jako punkty s¹siaduj¹ce z $x$ uznajemy te, 
+który prowadzi do najwiêkszej poprawym, a jako $rselect(x,S)$ funkcjê, która z s¹siedztwa $x$ 
+wybiera punkt osi¹galny poprzed modyfikacjê jednej zmiennej w niespe³nionych klauzulach. 
+Jako punkty s¹siaduj¹ce z $x$ uznajemy te, 
 które ró¿ni¹ siê wartoœci¹ jednej zmiennej. Wtedy algorytm WalkSAT przedstawia siê nastêpuj¹co:
 
 \begin{algorithm}
@@ -120,7 +122,13 @@ które ró¿ni¹ siê wartoœci¹ jednej zmiennej. Wtedy algorytm WalkSAT przedstawia s
 			\RETURN{$x^k$}
 		\ENDIF
 		\STATE $N\gets N(x^k)$
-		\STATE $x^{k+1}\gets gselect(x^k,N)$
+		
+        \STATE wybierz losowo $r$
+        \IF {$r < \theta$}
+            \STATE $x^{k + 1}\gets rselect(x^k,N)$
+        \ELSE
+            \STATE $x^{k + 1}\gets gselect(x^k,N)$
+        \ENDIF
 		\STATE $k\gets k +1$
 	\ENDWHILE
 \ENDWHILE
@@ -130,12 +138,17 @@ które ró¿ni¹ siê wartoœci¹ jednej zmiennej. Wtedy algorytm WalkSAT przedstawia s
 $MT$ oznacza maksymaln¹ iloœæ prób a $MF$ maksymaln¹ iloœæ iteracji w jednej próbie.
 
 Algorytm rozpoczyna przeszukiwanie od wylosowania pocz¹tkowego przypisania, a 
-nastêpnie wybiera kolejne przypisania z s¹siedztwa bie¿¹cego punktu tak, aby
-iloœæ niespe³nionych klauzul by³a mniejsza. Warto zauwa¿yæ, i¿ mo¿liwe s¹ 
-d³ugie ruchy w obszarach które nie poprawiaj¹ wyniku, tzw. \textsl{plateau}. 
-W podstawowej wersji GSAT mo¿e utkn¹æ w \textsl{plateau}. Aby rozwi¹zaæ ten 
-problem, mo¿na skorzystaæ z nastêpuj¹cych ulepszeñ algorytmu \cite{Selman}:
+nastêpnie w ka¿dym kroku dokonuje jednego z dwóch mo¿liwych wyborów:
 
+\begin{itemize}
+    \item wykonuje krok zach³anny GSAT: wybiera przypisanie poprzez zmianê wartoœci pojedynczej zmiennej,
+        które prowadzi do najwiêkszej poprawy jeœli chodzi o iloœæ spe³nionych klauzul
+    \item zmienia wartoœæ zmiennej, losowo wybranej spoœród klauzul, które nie s¹ spe³nione.
+\end{itemize}
+
+Prawdopodobieñstwo losowego ruchu $\theta$ nale¿y ustawiæ na oko³o $0.2$. Okazuje siê ¿e ta stosunkowo 
+nieskomplikowana modyfikacja powoduje znacz¹c¹ poprawê algorytmu. W naszej implementacji dodatkowo 
+algorytm w kroku zach³annym wybiera losowo zmienn¹ jeœli wiele potencjalnych wyborów powoduje tê sam¹ poprawê.
 
 \section{ALGORYTM DLM}
 Drugim algorytmem zaimplementowanym w ramach projektu jest algorytm DLM (ang.
@@ -222,8 +235,6 @@ $\Delta_x L(x,\lambda) = 0$. Mo¿emy teraz przedstawiæ ogólny schemat dzia³ania a
 \end{algorithmic}
 \end{algorithm}
 
-W \cite{Shang} mo¿na znaleŸæ du¿o bardziej wyczerpuj¹cy opis algorytmu z
-naciskiem na szczegó³y implementacyjne (np. warunek aktualizacji wektora $\lambda$). 
 
 \section{IMPLEMENTACJA}
 \subsection{Œrodowisko}
@@ -253,6 +264,7 @@ wchodz¹ kolejno:
     (jednak taki styl jest najczêœciej stosowany).
 \end{itemize}
 
+Dok³adny opis formatu mo¿na znaleŸæ pod adresem \url{http://www.cs.ubc.ca/~babic/doc/dimacs_cnf.pdf}.
 
 \subsection{Kompilacja projektu}
 Przed kompilacj¹ nale¿y upewniæ siê ¿e polecenie \verb|javac| jest
@@ -273,6 +285,16 @@ Przed uruchomieniem projektu nale¿y upewniæ siê, ¿e polecenie \verb|java| jest d
 
 Przyk³adowe pliki z zadaniami w tym formacie mo¿na znaleŸæ w katalogu \verb|problems| projektu.
 
+\subsection{Plik konfiguracyjny zadania}
+Plik konfiguracyjny zadania umo¿liwia:
+
+\begin{itemize}
+
+\subsection{Plik konfiguracyjny logowania}
+Plik konfiguracyjny biblioteki \verb|log4j| znajduje siê w katalogu \verb|resourcescp|. 
+Poprzez zmianê wpisu \verb|INFO| na \verb|DEBUG| mo¿na w³¹czyæ wyœwietlanie dok³adnego przebiegu algorytmu.
+
+
 \section{TESTOWANIE}
 Ocena jakoœci konkretnego algorytmu odbywaæ siê bêdzie na podstawie 
 analizy jego przebiegu dla pewnej liczby trudnych problemów 3-SAT. 
@@ -288,7 +310,7 @@ klauzul po up³ywie ustalonego czasu lub pewnej iloœci iteracji.
 \bibitem{Bohlin} M.~Bohlin, \textit{Local Search Techniques for SAT}
 \bibitem{Selman} B.~Selman, H.~A.~Kautz, B.~Cohen, \textit{Local Search
 Strategies for Satisfiability Testing}
-\bibitem{}
+\bibitem{ShangFirst} Y.~Shang, B.~W.~Wah, \textit{A Discrete Lagrangian-Based Global-Search method for Satisfiability Problems}
 \bibitem{Shang} Y.~Shang, B.~W.~Wah, \textit{Improving the Performance of Discrete Lagrange-Multiplier Search for Solving Hard SAT Problems}
 \end{thebibliography}
 

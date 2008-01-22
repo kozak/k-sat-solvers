@@ -62,7 +62,7 @@ public class TaskStats {
         sb.append("Iterations: ").append(numIterations);
         sb.append(" Satisfied clauses: ").append(numSatisfiedClauses);
         sb.append(" Best satisfied clauses ").append(bestNumSatisfiedClauses);
-        sb.append(" Elapsed time: ").append(elapsedTime).append(" ms");
+        sb.append(" Elapsed time: ").append((double)elapsedTime / 1000000).append(" ms");
         return sb.toString();
     }
 }

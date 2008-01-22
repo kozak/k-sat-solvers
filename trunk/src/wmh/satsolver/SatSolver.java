@@ -50,7 +50,8 @@ public class SatSolver {
     }
 
     private static void runSolver(BooleanFormula formulaToSolve, SolverOptions options) {
-        logger.info("Running solver");
+        logger.info("Running solver, num clauses = "  + formulaToSolve.getNumClauses() +
+                ", num vars = " + formulaToSolve.getNumVarsPerClause());
         // Ustaw ograniczenie na ilosc iteracji
         List<StopCondition> stopConditions = new ArrayList<StopCondition>();
         if (options.scMaxIters > 0) {
@@ -80,13 +81,21 @@ public class SatSolver {
          * osiagniete przez DLM */
         int numSatForBestDLM = 0;
 
+        /** Losowanie wektorow przypisan poczatkowych */
+        List<Assignment> initialAssignmentsWS = new ArrayList<Assignment>(options.numRestarts);
+        List<Assignment> initAssignmentsDLM = new ArrayList<Assignment>(options.numRestarts);
 
         for (int i = 0; i < options.numRestarts; i++) {
+            Assignment as = AssignmentFactory.getRandomAssignment(formulaToSolve.getNumVarsPerClause());
+            initialAssignmentsWS.add(as);
+            initAssignmentsDLM.add(as.duplicate());
+        }
+
+        long currentTime = System.nanoTime();
+        logger.info("Starting WalkSAT iterations");
+        for (int i = 0; i < options.numRestarts; i++) {
             logger.debug("BIG Iteration " + (i + 1) + "/" + options.numRestarts);
-            // Tworzymy losowe przypisanie i jego kopie, gdyz jest ono modyfikowane w miejscu
-            Assignment initialAssignmentWS =
-                    AssignmentFactory.getRandomAssignment(formulaToSolve.getNumVarsPerClause());
-            Assignment iniAssignmentDLM = initialAssignmentWS.duplicate();
+            Assignment initialAssignmentWS = initialAssignmentsWS.get(i);
 
             logger.debug("Starting WalkSAT, rmProb = " + options.rmProb + ", rndBest = "
                     + options.rndBest);
@@ -102,7 +111,7 @@ public class SatSolver {
             if (logger.isDebugEnabled()) {
                 TaskStats stats = walkSAT.taskStats;
                 logger.debug("WalkSAT ended after " + stats.getNumIterations() +
-                " iterations, " + stats.getElapsedTime() + " ms, satisfied clauses = "
+                " iterations, " + ((double)stats.getElapsedTime() / 1000000) + " ms, satisfied clauses = "
                         + stats.getBestNumSatisfiedClauses());
             }
 
@@ -111,19 +120,31 @@ public class SatSolver {
                 bestAsFoundByWS = asFoundByWS;
                 numSatForBestWS = numSatByWS;
             }
+            if (numSatForBestWS == formulaToSolve.getNumClauses()) {
+                logger.info("WalkSAT found a solution, no restarts needed");
+                break;
+            }
+        }
 
+        long wsTime = System.nanoTime() - currentTime;
+
+
+        currentTime = System.nanoTime();
+        logger.debug("Starting DLM iterations");
+        for (int i = 0; i < options.numRestarts; i++) {
+            Assignment iniAssignmentDLM = initAssignmentsDLM.get(i);
             AbstractSolver dlm = new DLMA1(formulaToSolve, iniAssignmentDLM, options.dlmGamma);
 
 	        for (StopCondition stopCondition : stopConditions) {
 		        dlm.addStopCondition(stopCondition);
 	        }
 
-	        logger.debug("Starting DLM");
+	        logger.debug("Starting DLM, gamma = " + options.dlmGamma);
             Assignment asFoundByDLM = dlm.solve();
             if (logger.isDebugEnabled()) {
                 TaskStats stats = dlm.taskStats;
                 logger.debug("DLM ended after " + stats.getNumIterations() +
-                        " iterations, " + stats.getElapsedTime() + " ms, satisfied clauses = "
+                        " iterations, " + ((double)stats.getElapsedTime() / 1000000) + " ms, satisfied clauses = "
                         + stats.getBestNumSatisfiedClauses());
             }
             int numSatByDLM = formulaToSolve.getNumSatisfiedClauses(asFoundByDLM);
@@ -131,10 +152,21 @@ public class SatSolver {
                 bestAsFoundByDLM = asFoundByDLM;
                 numSatForBestDLM = numSatByDLM;
             }
+            if (numSatForBestDLM == formulaToSolve.getNumClauses()) {
+                logger.info("DLM found a solution, no restarts needed");
+                break;
+            }
         }
 
-        System.out.println("Number of sat. clauses by WalkSAT =  " + numSatForBestWS);
-        System.out.println("Number of sat. clauses by DLM =  " + numSatForBestDLM);
+        long dlmTime = System.nanoTime() - currentTime;
+
+        System.out.println("Number of clauses in formula: " + formulaToSolve.getNumClauses());
+        System.out.println("Number of satisfied clauses by WalkSAT =  " + numSatForBestWS);
+        System.out.println("Time of execution for WalkSAT: " + ((double)wsTime / 1000000000) + " seconds (" +
+        ((double)wsTime / 1000000) + " ms)");
+        System.out.println("Number of satisfied clauses by DLM =  " + numSatForBestDLM);
+        System.out.println("Time of execution for DLM: " + ((double)dlmTime / 1000000000) + " seconds (" +
+                ((double)dlmTime / 1000000) + " ms)");
     }
 
     private static SolverOptions loadFromFile(String fileName) throws IOException {
