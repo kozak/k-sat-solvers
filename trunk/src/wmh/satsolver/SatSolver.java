@@ -132,6 +132,7 @@ public class SatSolver {
         currentTime = System.nanoTime();
         logger.debug("Starting DLM iterations");
         for (int i = 0; i < options.numRestarts; i++) {
+            logger.debug("BIG Iteration " + (i + 1) + "/" + options.numRestarts);
             Assignment iniAssignmentDLM = initAssignmentsDLM.get(i);
             AbstractSolver dlm = new DLMA1(formulaToSolve, iniAssignmentDLM, options.dlmGamma);
 
