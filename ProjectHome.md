@@ -1,0 +1,2 @@
+A project for modern heuristic techniques at Warsaw University of Technology. Comparison of different algorithms used to solve k-SAT problem. Implementation of DLM method based on the paper by Yi Shang and Benjamin W. Wah: "Improving the Performance of Discrete Lagrange-Multiplier Search for Solving Hard SAT Problems".
+uses: http://code.google.com/p/aima-java/
